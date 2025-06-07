@@ -13,5 +13,5 @@ NotConnectedState::NotConnectedState(Context &context)
         context.timer.startTimer(500ms);
         context.bts.sendAttachRequest(btsId);
         context.setState<ConnectingState>();
-}
+    }
 }
