@@ -16,6 +16,7 @@ namespace ue
         void stop();
 
         void sendAttachRequest(common::BtsId) override;
+        void sendSms(common::PhoneNumber to, const std::string& text) override;
 
     private:
         void handleMessage(BinaryMessage msg);
