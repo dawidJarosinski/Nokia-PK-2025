@@ -31,7 +31,7 @@ namespace ue {
         context.setState<NotConnectedState>();
     }
 
-    void ConnectingState::handleDisconnectedFromBts() {
+    void ConnectingState::handleDisconnected() {
         logger.logError("Connection lost while connecting!");
         context.user.showNotConnected();
         context.timer.stopTimer();
