@@ -44,8 +44,14 @@ namespace ue {
                 }
                 case common::MessageId::Sms: {
                     std::string text = reader.readRemainingText();
-                    handler->handleSmsReceived(from, text);
+                    if (handler) handler->handleSmsReceived(from, text);
                     break;
+                }
+                case common::MessageId::UnknownRecipient:
+                {
+                    auto originalRecipient = reader.readPhoneNumber();
+                    logger.logError("SMS delivery failed - Unknown recipient: ", originalRecipient);
+                    if (handler) handler->handleSmsSentResult(originalRecipient, false);                    break;
                 }
                 default:
                     logger.logError("unknow message: ", msgId, ", from: ", from);
@@ -71,4 +77,15 @@ namespace ue {
         msg.writeBtsId(btsId);
         transport.sendMessage(msg.getMessage());
     }
+
+    void BtsPort::sendSms(common::PhoneNumber to, const std::string& text)
+    {
+        logger.logInfo("Sending SMS to: ", to);
+        common::OutgoingMessage msg{common::MessageId::Sms,
+                                    phoneNumber,
+                                    to};
+        msg.writeText(text);
+        transport.sendMessage(msg.getMessage());
+    }
+
 }

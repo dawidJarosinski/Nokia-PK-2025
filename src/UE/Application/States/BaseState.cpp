@@ -28,11 +28,21 @@ namespace ue {
     }
 
     void BaseState::handleDisconnected() {
-        logger.logError("Unexpected: handleDisconnected");
+        logger.logError("Unexpected: handleDisconnectedFromBts");
     }
 
     void BaseState::handleSmsReceived(common::PhoneNumber from, std::string text) {
         logger.logError("Uexpected: handleSmsReceived from: ", from, " text: ", text);
+    }
+
+    void BaseState::handleSmsSentResult(common::PhoneNumber to, bool success)
+    {
+        logger.logError("Unexpected: handleSmsSentResult for: ", to, ", Success: ", success);
+    }
+
+    void BaseState::handleSmsComposeResult(common::PhoneNumber recipient, const std::string &text)
+    {
+        logger.logError("Unexpected: handleSmsComposeResult for: ", recipient, ", text: ", text);
     }
 
     void BaseState::handleUiAction(std::optional<std::size_t> selectedIndex) {

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "BaseState.hpp"
 
 namespace ue
@@ -11,6 +12,7 @@ namespace ue
 
         void handleUiAction(std::optional<std::size_t> selectedIndex) override;
         void handleUiBack() override;
+
 
         void handleDisconnected() override;
         void handleSmsReceived(common::PhoneNumber from, std::string text) override;
