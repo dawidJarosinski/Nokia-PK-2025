@@ -59,4 +59,17 @@ namespace ue
         EXPECT_CALL(userPortMock, showConnected());
         objectUnderTest.handleAttachAccept();
     }
+
+    TEST_F(ApplicationConnectingTestSuite, shallReturnToNotConnectedOnAttachReject)
+    {
+        EXPECT_CALL(timerPortMock, stopTimer());
+        EXPECT_CALL(userPortMock, showNotConnected());
+        objectUnderTest.handleAttachReject();
+    }
+
+    TEST_F(ApplicationConnectingTestSuite, shallReturnToNotConnectedOnTimeout)
+    {
+        EXPECT_CALL(userPortMock, showNotConnected());
+        objectUnderTest.handleTimeout();
+    }
 };
