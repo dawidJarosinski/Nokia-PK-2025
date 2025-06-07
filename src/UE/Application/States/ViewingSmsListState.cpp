@@ -52,7 +52,7 @@ namespace ue
         context.setState<ConnectedState>();
     }
 
-    void ViewingSmsListState::handleDisconnectedFromBts()
+    void ViewingSmsListState::handleDisconnected()
     {
         logger.logInfo("Connection lost while viewing SMS list.");
         context.setState<NotConnectedState>();

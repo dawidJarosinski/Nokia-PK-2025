@@ -12,7 +12,7 @@ namespace ue
 
         void handleUiBack() override;
 
-        void handleDisconnectedFromBts() override;
+        void handleDisconnected() override;
         void handleSmsReceived(common::PhoneNumber from, std::string text) override;
 
     private:
