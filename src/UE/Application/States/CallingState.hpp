@@ -17,6 +17,8 @@ namespace ue
         void handleTimeout() override;
         void handleUnknownRecipient(common::PhoneNumber peer) override;
         void handleCallReject(common::PhoneNumber peer) override;
+        void handleSmsReceived(common::PhoneNumber from, std::string text) override;Add commentMore actions
+        void handleCallRequest(common::PhoneNumber from) override;
 
     private:
         common::PhoneNumber dialedNumber;
