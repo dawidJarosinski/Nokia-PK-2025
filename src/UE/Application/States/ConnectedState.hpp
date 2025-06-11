@@ -15,6 +15,7 @@ namespace ue
 
         void handleUiAction(std::optional<std::size_t> selectedIndex) override;
         void handleUiBack() override;
+        void handleCallRequest(common::PhoneNumber from) override;
 
     private:
         void showMainMenu();

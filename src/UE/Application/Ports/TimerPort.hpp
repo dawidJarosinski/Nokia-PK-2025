@@ -6,21 +6,20 @@
 namespace ue
 {
 
-class TimerPort : public ITimerPort
-{
-public:
-    TimerPort(common::ILogger& logger);
+    class TimerPort : public ITimerPort
+    {
+    public:
+        TimerPort(common::ILogger& logger);
 
-    void start(ITimerEventsHandler& handler);
-    void stop();
+        void start(ITimerEventsHandler& handler);
+        void stop();
 
-    // ITimerPort interface
-    void startTimer(Duration duration) override;
-    void stopTimer() override;
+        void startTimer(Duration duration) override;
+        void stopTimer() override;
 
-private:
-    common::PrefixedLogger logger;
-    ITimerEventsHandler* handler = nullptr;
-};
+    private:
+        common::PrefixedLogger logger;
+        ITimerEventsHandler* handler = nullptr;
+    };
 
 }
