@@ -11,65 +11,104 @@
 
 namespace ue
 {
-    using namespace ::testing;
+using namespace ::testing;
 
-    class ApplicationTestSuite : public Test
-    {
-    protected:
-        const common::PhoneNumber PHONE_NUMBER{112};
-        const common::BtsId BTS_ID{1337};
-        NiceMock<common::ILoggerMock> loggerMock;
-        StrictMock<IBtsPortMock> btsPortMock;
-        StrictMock<IUserPortMock> userPortMock;
-        StrictMock<ITimerPortMock> timerPortMock;
+class ApplicationTestSuite : public Test
+{
+protected:
+    const common::PhoneNumber PHONE_NUMBER{112};
+    NiceMock<common::ILoggerMock> loggerMock;
+    StrictMock<IBtsPortMock> btsPortMock;
+    StrictMock<IUserPortMock> userPortMock;
+    StrictMock<ITimerPortMock> timerPortMock;
 
-        Expectation showNotConnected = EXPECT_CALL(userPortMock, showNotConnected());
+    std::unique_ptr<Application> applicationPtr;
 
-        Application objectUnderTest{PHONE_NUMBER,
-                                    loggerMock,
-                                    btsPortMock,
-                                    userPortMock,
-                                    timerPortMock};
-    };
-
-    struct ApplicationNotConnectedTestSuite : ApplicationTestSuite
-    {
-        void sendAttachRequestOnSib(){
-            using namespace std::chrono_literals;
-            EXPECT_CALL(btsPortMock, sendAttachRequest(BTS_ID));
-            EXPECT_CALL(timerPortMock, startTimer(500ms));
-            EXPECT_CALL(userPortMock, showConnecting());
-            objectUnderTest.handleSib(BTS_ID);
-        }
-    };
-
-    TEST_F(ApplicationNotConnectedTestSuite, shallSendAttachRequestOnSib)
-    {
-        sendAttachRequestOnSib();
-    }
-    struct ApplicationConnectingTestSuite : ApplicationNotConnectedTestSuite{
-        ApplicationConnectingTestSuite(){
-            sendAttachRequestOnSib();
-        }
-
-    };
-
-    TEST_F(ApplicationConnectingTestSuite, shallConnectOnAttachAccept) {
-        EXPECT_CALL(timerPortMock, stopTimer());
-        EXPECT_CALL(userPortMock, showConnected());
-        objectUnderTest.handleAttachAccept();
-    }
-
-    TEST_F(ApplicationConnectingTestSuite, shallReturnToNotConnectedOnAttachReject)
-    {
-        EXPECT_CALL(timerPortMock, stopTimer());
+    void SetUp() override {
         EXPECT_CALL(userPortMock, showNotConnected());
-        objectUnderTest.handleAttachReject();
     }
 
-    TEST_F(ApplicationConnectingTestSuite, shallReturnToNotConnectedOnTimeout)
-    {
-        EXPECT_CALL(userPortMock, showNotConnected());
-        objectUnderTest.handleTimeout();
+    void createApplication() {
+        applicationPtr = std::make_unique<Application>(PHONE_NUMBER,
+                                      loggerMock,
+                                      btsPortMock,
+                                      userPortMock,
+                                      timerPortMock);
     }
+
+
+    void verifyShowNotConnectedOnStart() {
+        Mock::VerifyAndClearExpectations(&userPortMock);
+    }
+};
+
+struct ApplicationNotConnectedTestSuite : ApplicationTestSuite
+{};
+
+TEST_F(ApplicationTestSuite, UeShallAttachToBtsAfterReceivingSib)
+{
+    createApplication();
+    verifyShowNotConnectedOnStart();
+
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    applicationPtr->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    applicationPtr->handleAttachAccept();
+}
+
+TEST_F(ApplicationTestSuite, UeShallHandleAttachmentRejection)
+{
+    createApplication();
+    verifyShowNotConnectedOnStart();
+
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    applicationPtr->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showNotConnected());
+    applicationPtr->handleAttachReject();
+}
+
+TEST_F(ApplicationTestSuite, UeShallHandleAttachmentTimeout)
+{
+    createApplication();
+    verifyShowNotConnectedOnStart();
+
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    applicationPtr->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showNotConnected());
+    applicationPtr->handleTimeout();
+}
+
+TEST_F(ApplicationTestSuite, UeShallHandleDisconnection)
+{
+    createApplication();
+    verifyShowNotConnectedOnStart();
+
+    common::BtsId btsId{42};
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    applicationPtr->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    applicationPtr->handleAttachAccept();
+
+    EXPECT_CALL(userPortMock, showNotConnected());
+    applicationPtr->handleDisconnected();
+}
+
 };
